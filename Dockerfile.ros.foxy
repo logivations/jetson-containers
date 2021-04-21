@@ -19,26 +19,26 @@ ENV LANG=en_US.UTF-8
 
 # add the ROS deb repo to the apt sources list
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+	apt-get install -y --no-install-recommends \
 		curl \
 		wget \
 		gnupg2 \
 		lsb-release \
 		apt-utils \
-        build-essential \
-        software-properties-common \
-        git \
-        libcurl3-dev \
-        libfreetype6-dev \
-        libzmq3-dev \
-        zip \
-        zlib1g-dev \
-        unzip \
-        rsync \
-        dbus \
+		build-essential \
+		software-properties-common \
+		git \
+		libcurl3-dev \
+		libfreetype6-dev \
+		libzmq3-dev \
+		zip \
+		zlib1g-dev \
+		unzip \
+		rsync \
+		dbus \
 		ssh \
 		iputils-ping \
-        g++ \
+		g++ \
 		autotools-dev \
 		libicu-dev \
 		libbz2-dev \
@@ -47,15 +47,15 @@ RUN apt-get update && \
 		locales \
 		python3-tk \
 		&& \
-    	apt clean && \
-   		rm -rf /var/lib/apt/lists/*
+		apt clean && \
+		rm -rf /var/lib/apt/lists/*
 
 RUN wget --no-check-certificate https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc && apt-key add ros.asc
 RUN sh -c 'echo "deb [arch=$(dpkg --print-architecture)] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
 
 # install development packages
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+	apt-get install -y --no-install-recommends \
 		cmake \
 		libbullet-dev \
 		libpython3-dev \
@@ -71,8 +71,8 @@ RUN apt-get update && \
 		libtinyxml2-dev \
 		libcunit1-dev \
 		&& \
-    	apt clean && \
-    	rm -rf /var/lib/apt/lists/*
+		apt clean && \
+		rm -rf /var/lib/apt/lists/*
 
 # install some pip packages needed for testing
 RUN python3 -m pip install -U \
@@ -91,29 +91,29 @@ RUN python3 -m pip install -U \
 
 # compile yaml-cpp-0.6, which some ROS packages may use (but is not in the 18.04 apt repo)
 RUN git clone --branch yaml-cpp-0.6.0 https://github.com/jbeder/yaml-cpp yaml-cpp-0.6 && \
-    cd yaml-cpp-0.6 && \
-    mkdir build && \
-    cd build && \
-    cmake -DBUILD_SHARED_LIBS=ON .. && \
-    make -j$(nproc) && \
-    cp libyaml-cpp.so.0.6.0 /usr/lib/aarch64-linux-gnu/ && \
-    ln -s /usr/lib/aarch64-linux-gnu/libyaml-cpp.so.0.6.0 /usr/lib/aarch64-linux-gnu/libyaml-cpp.so.0.6
+	cd yaml-cpp-0.6 && \
+	mkdir build && \
+	cd build && \
+	cmake -DBUILD_SHARED_LIBS=ON .. && \
+	make -j$(nproc) && \
+	cp libyaml-cpp.so.0.6.0 /usr/lib/aarch64-linux-gnu/ && \
+	ln -s /usr/lib/aarch64-linux-gnu/libyaml-cpp.so.0.6.0 /usr/lib/aarch64-linux-gnu/libyaml-cpp.so.0.6
 
 # https://answers.ros.org/question/325245/minimal-ros2-installation/?answer=325249#post-id-325249
 RUN mkdir -p ${ROS_ROOT}/src && \
-    cd ${ROS_ROOT} && \
-    rosinstall_generator --deps --rosdistro ${ROS_DISTRO} ${ROS_PKG} launch_xml launch_yaml example_interfaces > ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall
+	cd ${ROS_ROOT} && \
+	rosinstall_generator --deps --rosdistro ${ROS_DISTRO} ${ROS_PKG} launch_xml launch_yaml example_interfaces > ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall
 
 RUN cd ${ROS_ROOT} && cat ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
-    vcs import src < ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall
+	vcs import src < ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall
 RUN apt-get update && \
-    cd ${ROS_ROOT} && \
-    rosdep init && \
-    rosdep update
+	cd ${ROS_ROOT} && \
+	rosdep init && \
+	rosdep update
 RUN cd ${ROS_ROOT} && \
-     rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y --skip-keys "console_bridge fastcdr fastrtps rti-connext-dds-5.3.1 urdfdom_headers qt_gui" && \
+	rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y --skip-keys "console_bridge fastcdr fastrtps rti-connext-dds-5.3.1 urdfdom_headers qt_gui" && \
 #    rosdep install --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} -y --skip-keys "" && \
-    rm -rf /var/lib/apt/lists/*
+	rm -rf /var/lib/apt/lists/*
 
 # build it!
 RUN cd ${ROS_ROOT} && colcon build --symlink-install
@@ -122,9 +122,9 @@ RUN cd ${ROS_ROOT} && colcon build --symlink-install
 COPY ./packages/ros_entrypoint.sh /ros_entrypoint.sh
 
 RUN sed -i \
-    's/source "\/opt\/ros\/$ROS_DISTRO\/setup.bash"/source "${ROS_ROOT}\/install\/setup.bash"/g' \
-    /ros_entrypoint.sh && \
-    cat /ros_entrypoint.sh
+	's/source "\/opt\/ros\/$ROS_DISTRO\/setup.bash"/source "${ROS_ROOT}\/install\/setup.bash"/g' \
+	/ros_entrypoint.sh && \
+	cat /ros_entrypoint.sh
 
 RUN echo 'source ${ROS_ROOT}/install/setup.bash' >> /root/.bashrc
 
