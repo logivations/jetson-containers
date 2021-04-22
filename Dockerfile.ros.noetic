@@ -54,8 +54,8 @@ RUN mkdir ros_catkin_ws && \
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    apt install ros-melodic-robot \
-    apt install ros-melodic-perception && \
+    ros-melodic-robot \
+    ros-melodic-perception && \
     rm -rf /var/lib/apt/lists/*
 # setup entrypoint
 COPY ./packages/ros_entrypoint.sh /ros_entrypoint.sh
