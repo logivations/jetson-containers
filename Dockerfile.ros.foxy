@@ -84,11 +84,11 @@ RUN mkdir -p ${ROS_ROOT}/src && \
 
 
 # download unreleased packages
- RUN git clone --branch ros2 https://github.com/Kukanani/vision_msgs ${ROS_ROOT}/src/vision_msgs && \
-	git clone --branch ${ROS_DISTRO} https://github.com/ros2/demos demos && \
-	cp -r demos/demo_nodes_cpp ${ROS_ROOT}/src && \
-	cp -r demos/demo_nodes_py ${ROS_ROOT}/src && \
-	rm -r -f demos
+# RUN git clone --branch ros2 https://github.com/Kukanani/vision_msgs ${ROS_ROOT}/src/vision_msgs && \
+#	git clone --branch ${ROS_DISTRO} https://github.com/ros2/demos demos && \
+#	cp -r demos/demo_nodes_cpp ${ROS_ROOT}/src && \
+#	cp -r demos/demo_nodes_py ${ROS_ROOT}/src && \
+#	rm -r -f demos
 
 # install dependencies using rosdep
 RUN apt-get update && \
