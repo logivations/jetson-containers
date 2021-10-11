@@ -136,6 +136,8 @@ RUN mkdir -p ${ROS_ROOT}/src && \
 		camera_calibration_parsers \
 		camera_info_manager \
 		cv_bridge \
+		map_msgs \
+		laser_geometry \
 		v4l2_camera \
 		vision_opencv \
 		vision_msgs \
