@@ -1,17 +1,17 @@
 #
 # this dockerfile roughly follows the 'Install ROS From Source' procedures from:
-#   https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Development-Setup/
+#   https://docs.ros.org/en/galactic/Installation/Ubuntu-Development-Setup.html
 #
 ARG BASE_IMAGE=nvcr.io/nvidia/l4t-base:r32.5.0
 FROM ${BASE_IMAGE}
 
 ARG ROS_PKG=ros_base
-ENV ROS_DISTRO=foxy
+ENV ROS_DISTRO=galactic
 ENV ROS_ROOT=/opt/ros/${ROS_DISTRO}
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV SHELL /bin/bash
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-c"] 
 
 WORKDIR /tmp
 
@@ -21,7 +21,7 @@ ENV LANG=en_US.UTF-8
 ENV PYTHONIOENCODING=utf-8
 
 
-#
+# 
 # add the ROS deb repo to the apt sources list
 #
 RUN apt-get update && \
@@ -38,7 +38,7 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
 RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
 
-#
+# 
 # install development packages
 #
 RUN apt-get update && \
@@ -82,7 +82,7 @@ RUN python3 -m pip install -U \
 		pytest-rerunfailures \
 		pytest
 
-#
+# 
 # install OpenCV (with CUDA)
 #
 ARG OPENCV_URL=https://nvidia.box.com/shared/static/5v89u6g5rb62fpz4lh0rz531ajo2t5ef.gz
@@ -103,27 +103,14 @@ RUN apt-get purge -y '*opencv*' || echo "previous OpenCV installation not found"
     rm -rf opencv && \
     cp -r /usr/include/opencv4 /usr/local/include/opencv4 && \
     cp -r /usr/lib/python3.6/dist-packages/cv2 /usr/local/lib/python3.6/dist-packages/cv2
-
-
-#
-# compile yaml-cpp-0.6, which some ROS packages may use (but is not in the 18.04 apt repo)
-#
-RUN git clone --branch yaml-cpp-0.6.0 https://github.com/jbeder/yaml-cpp yaml-cpp-0.6 && \
-    cd yaml-cpp-0.6 && \
-    mkdir build && \
-    cd build && \
-    cmake -DBUILD_SHARED_LIBS=ON .. && \
-    make -j$(nproc) && \
-    cp libyaml-cpp.so.0.6.0 /usr/lib/aarch64-linux-gnu/ && \
-    ln -s /usr/lib/aarch64-linux-gnu/libyaml-cpp.so.0.6.0 /usr/lib/aarch64-linux-gnu/libyaml-cpp.so.0.6
-
-
-#
+    
+    
+# 
 # download/build ROS from source
 #
 RUN mkdir -p ${ROS_ROOT}/src && \
     cd ${ROS_ROOT} && \
-
+    
     # https://answers.ros.org/question/325245/minimal-ros2-installation/?answer=325249#post-id-325249
     rosinstall_generator --deps --rosdistro ${ROS_DISTRO} ${ROS_PKG} \
 		launch_xml \
@@ -148,10 +135,6 @@ RUN mkdir -p ${ROS_ROOT}/src && \
     cat ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
     vcs import src < ros2.${ROS_DISTRO}.${ROS_PKG}.rosinstall && \
 
-    # patch libyaml - https://github.com/dusty-nv/jetson-containers/issues/41#issuecomment-774767272
-    rm ${ROS_ROOT}/src/libyaml_vendor/CMakeLists.txt && \
-    wget --no-check-certificate https://raw.githubusercontent.com/ros2/libyaml_vendor/master/CMakeLists.txt -P ${ROS_ROOT}/src/libyaml_vendor/ && \
-    
     # install dependencies using rosdep
     apt-get update && \
     cd ${ROS_ROOT} && \
@@ -167,14 +150,14 @@ RUN mkdir -p ${ROS_ROOT}/src && \
 
     # build it!
     colcon build --merge-install && \
-
+    
     # remove build files
     rm -rf ${ROS_ROOT}/src && \
     rm -rf ${ROS_ROOT}/logs && \
     rm -rf ${ROS_ROOT}/build && \
     rm ${ROS_ROOT}/*.rosinstall
-
-
+    
+    
 #
 # fix broken package.xml in test_pluginlib that crops up if/when rosdep is run again
 #
@@ -182,12 +165,12 @@ RUN mkdir -p ${ROS_ROOT}/src && \
 #   Package 'test_pluginlib' must declare at least one maintainer
 #   The package node must contain at least one "license" tag
 #
-#RUN TEST_PLUGINLIB_PACKAGE="${ROS_ROOT}/build/pluginlib/prefix/share/test_pluginlib/package.xml" && \
+#RUN TEST_PLUGINLIB_PACKAGE="${ROS_ROOT}/build/pluginlib/pluginlib_enable_plugin_testing/install/test_pluginlib__test_pluginlib/share/test_pluginlib/package.xml" && \
 #    sed -i '/<\/description>/a <license>BSD<\/license>' $TEST_PLUGINLIB_PACKAGE && \
 #    sed -i '/<\/description>/a <maintainer email="michael@openrobotics.org">Michael Carroll<\/maintainer>' $TEST_PLUGINLIB_PACKAGE && \
 #    cat $TEST_PLUGINLIB_PACKAGE
-
-
+    
+    
 #
 # Set the default DDS middleware to cyclonedds
 # https://github.com/ros2/rclcpp/issues/1335
