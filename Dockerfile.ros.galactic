@@ -151,7 +151,7 @@ RUN mkdir -p ${ROS_ROOT}/src && \
     apt-get clean && \
 
     # build it!
-    colcon build --merge-install && \
+    colcon build --merge-install --cmake-args -DCMAKE_BUILD_TYPE=Release && \
     
     # remove build files
     rm -rf ${ROS_ROOT}/src && \
